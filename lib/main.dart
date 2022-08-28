@@ -31,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late VideoPlayerController _controller;
+  late DoubleTapAction _lastAction;
 
   @override
   void initState() {
@@ -40,6 +41,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ..initialize().then((_) {
         setState(() {});
       });
+    _controller.addListener(() {
+      setState(() {});
+    });
+    _lastAction = DoubleTapAction.none;
   }
 
   void _onVideoTapped() {
@@ -58,8 +63,22 @@ class _MyHomePageState extends State<MyHomePage> {
           ? Stack(
               children: [
                 Center(
-                  child: InkWell(
+                  child: GestureDetector(
                     onTap: _onVideoTapped,
+                    onDoubleTap: () {
+                      const offset = Duration(seconds: 10);
+                      if (_lastAction == DoubleTapAction.back) {
+                        _controller.seekTo(_controller.value.position - offset);
+                      } else if (_lastAction == DoubleTapAction.forward) {
+                        _controller.seekTo(_controller.value.position + offset);
+                      }
+                    },
+                    onDoubleTapDown: (details) {
+                      final half = MediaQuery.of(context).size.width / 2;
+                      _lastAction = details.globalPosition.dx > half
+                          ? DoubleTapAction.forward
+                          : DoubleTapAction.back;
+                    },
                     child: AspectRatio(
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(
@@ -71,9 +90,41 @@ class _MyHomePageState extends State<MyHomePage> {
                 Positioned(
                   bottom: 0,
                   width: MediaQuery.of(context).size.width,
-                  child: VideoProgressIndicator(
-                    _controller,
-                    allowScrubbing: true,
+                  child: Column(
+                    children: [
+                      VideoProgressIndicator(
+                        _controller,
+                        allowScrubbing: true,
+                      ),
+                      Material(
+                        color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _controller.value.isPlaying
+                                        ? _controller.pause()
+                                        : _controller.play();
+                                  });
+                                },
+                                icon: Icon(
+                                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                '${_controller.value.position.format()} / ${_controller.value.duration.format()}',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -82,3 +133,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+extension on Duration {
+  String format() {
+    return toString().split('.').first;
+  }
+}
+
+enum DoubleTapAction { forward, back, none }
