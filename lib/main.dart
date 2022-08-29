@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiktok_mate/ui/widgets/video_control_bar.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
@@ -29,28 +30,46 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   late DoubleTapAction _lastAction;
+  late Animation<double> _sizeAnimation;
+  late Animation<double> _fadeAnimation;
+  late AnimationController _animationController;
+  IconData? _lastAnimationIcon;
 
   @override
   void initState() {
+    _animationController =
+        AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _sizeAnimation = Tween<double>(begin: 28, end: 72).animate(_animationController);
+    _fadeAnimation = TweenSequence([
+      TweenSequenceItem<double>(tween: Tween<double>(begin: 0, end: 1), weight: 1),
+      TweenSequenceItem<double>(tween: Tween<double>(begin: 1, end: 0), weight: 1),
+    ]).animate(_animationController);
     super.initState();
     _controller = VideoPlayerController.network(
-        'https://v16m.tiktokcdn.com/9d685a814bfcf596f7eaaa28132d71f2/630b42ad/video/tos/useast2a/tos-useast2a-pve-0068/b4b2efa695a54c45aa04f01254ef56c8/?a=1180&ch=0&cr=0&dr=0&lr=all&cd=0%7C0%7C0%7C0&cv=1&br=640&bt=320&cs=0&ds=6&ft=lUxGYHnMMyq8Z2-q0he2NFR2dIJGb&mime_type=video_mp4&qs=0&rc=aThpaTtpNDUzO2hmOGc0OkBpamxoaWY6ZnZ1PDMzNzczM0AuNi8vY2I1XmMxXzNjL2NjYSNfM2czcjRnZnBgLS1kMTZzcw%3D%3D&l=2022082804225201021713510318BCAA8C&btag=80000&cc=3')
+        'https://v19.tiktokcdn.com/1914cbc70fe51fae8cf245c9e69e8056/630d6826/video/tos/useast2a/tos-useast2a-pve-0068/b4b2efa695a54c45aa04f01254ef56c8/?a=1180&ch=0&cr=0&dr=0&lr=all&cd=0%7C0%7C0%7C0&cv=1&br=640&bt=320&cs=0&ds=6&ft=ARfLcB7qqG3mo0PWFZ7BkVQnqVOT_KJ&mime_type=video_mp4&qs=0&rc=aThpaTtpNDUzO2hmOGc0OkBpamxoaWY6ZnZ1PDMzNzczM0AuNi8vY2I1XmMxXzNjL2NjYSNfM2czcjRnZnBgLS1kMTZzcw%3D%3D&l=20220829192717010217023164013AAC38&btag=80000&cc=4')
       ..initialize().then((_) {
         setState(() {});
       });
-    _controller.addListener(() {
-      setState(() {});
-    });
+    // _controller.addListener(() {
+    //   setState(() {});
+    // });
     _lastAction = DoubleTapAction.none;
   }
 
-  void _onVideoTapped() {
+  void _onVideoTapped(dynamic _) {
     setState(() {
       _controller.value.isPlaying ? _controller.pause() : _controller.play();
+      _playAnimation(_controller.value.isPlaying ? Icons.play_arrow : Icons.pause);
     });
+  }
+
+  void _playAnimation(IconData icon) {
+    _lastAnimationIcon = icon;
+    _animationController.reset();
+    _animationController.forward();
   }
 
   @override
@@ -64,13 +83,15 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Center(
                   child: GestureDetector(
-                    onTap: _onVideoTapped,
+                    onTapDown: _onVideoTapped,
                     onDoubleTap: () {
                       const offset = Duration(seconds: 10);
                       if (_lastAction == DoubleTapAction.back) {
                         _controller.seekTo(_controller.value.position - offset);
+                        _playAnimation(Icons.fast_rewind);
                       } else if (_lastAction == DoubleTapAction.forward) {
                         _controller.seekTo(_controller.value.position + offset);
+                        _playAnimation(Icons.fast_forward);
                       }
                     },
                     onDoubleTapDown: (details) {
@@ -87,45 +108,32 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
+                Center(
+                  child: AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Material(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Colors.black,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Icon(
+                              _lastAnimationIcon,
+                              color: Colors.white,
+                              size: _sizeAnimation.value,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 Positioned(
                   bottom: 0,
                   width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    children: [
-                      VideoProgressIndicator(
-                        _controller,
-                        allowScrubbing: true,
-                      ),
-                      Material(
-                        color: Colors.black,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _controller.value.isPlaying
-                                        ? _controller.pause()
-                                        : _controller.play();
-                                  });
-                                },
-                                icon: Icon(
-                                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                '${_controller.value.position.format()} / ${_controller.value.duration.format()}',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: VideoControlBar(controller: _controller),
                 ),
               ],
             )
