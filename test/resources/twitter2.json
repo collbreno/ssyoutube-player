@@ -1,0 +1,43 @@
+{
+  "id": "1564046180644003800",
+  "url": [
+    {
+      "url": "other_link",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 320,
+      "subname": "320"
+    },
+    {
+      "url": "other_link_2",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 540,
+      "subname": "540"
+    },
+    {
+      "url": "best_link_twitter2",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 640,
+      "subname": "640"
+    }
+  ],
+  "meta": {
+    "title": "https:\/\/t.co\/x2GT72Yehn",
+    "source": "https:\/\/twitter.com\/happyhomens\/status\/1564046218094940161"
+  },
+  "video_quality": [
+    "320",
+    "540",
+    "640"
+  ],
+  "thumb": "https:\/\/pbs.twimg.com\/ext_tw_video_thumb\/1564046180644003843\/pu\/img\/QiLK3-8Nk2aZQn-i.jpg",
+  "sd": null,
+  "hosting": "twitter.com",
+  "hd": null,
+  "timestamp": 1661812471
+}

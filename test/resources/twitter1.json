@@ -1,0 +1,49 @@
+{
+  "id": "1563978142439678000",
+  "url": [
+    {
+      "url": "best_link_twitter1",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 1024,
+      "subname": "1024"
+    },
+    {
+      "url": "other_link",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 852,
+      "subname": "852"
+    },
+    {
+      "url": "other_link_2",
+      "ext": "mp4",
+      "type": "mp4",
+      "name": "MP4",
+      "quality": 568,
+      "subname": "568"
+    }
+  ],
+  "meta": {
+    "title": "last night was a movie",
+    "source": "https:\/\/twitter.com\/TweetsOfCats\/status\/1563978212950032391?t=n5AbZy3SgxiiJIhds-zEuA&s=19"
+  },
+  "video_quality": [
+    "1024",
+    "852",
+    "568"
+  ],
+  "thumb": "https:\/\/pbs.twimg.com\/ext_tw_video_thumb\/1563978142439677952\/pu\/img\/w_T2-bbwc-CFAgwm.jpg",
+  "hd": {
+    "url": "https:\/\/video.twimg.com\/ext_tw_video\/1563978142439677952\/pu\/vid\/576x1024\/Slm9MeHo_bwl6uRv.mp4?tag=12",
+    "format": "mp4"
+  },
+  "sd": {
+    "url": "https:\/\/video.twimg.com\/ext_tw_video\/1563978142439677952\/pu\/vid\/320x568\/L5u0O0_ainhum20o.mp4?tag=12",
+    "format": "mp4"
+  },
+  "hosting": "twitter.com",
+  "timestamp": 1661825666
+}
