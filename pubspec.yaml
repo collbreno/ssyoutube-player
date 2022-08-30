@@ -33,6 +33,8 @@ dependencies:
   video_player: ^2.4.7
   http: ^0.13.5
   beautiful_soup_dart: ^0.3.0
+  flutter_bloc: ^8.1.1
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
