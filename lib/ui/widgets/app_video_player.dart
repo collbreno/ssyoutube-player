@@ -36,6 +36,12 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
       });
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _onVideoTapped(TapDownDetails _) {
     setState(() {
       _controller.value.isPlaying ? _controller.pause() : _controller.play();
