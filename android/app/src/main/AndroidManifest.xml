@@ -33,7 +33,9 @@
 
                 <!-- Accepted sites -->
                 <data android:host="*.tiktok.com" />
+                <data android:host="tiktok.com" />
                 <data android:host="*.instagram.com" />
+                <data android:host="instagram.com" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

@@ -50,6 +50,7 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: _navigatorKey,
       title: 'TikTok Mate',
       theme: ThemeData(
+        brightness: Brightness.dark,
         primarySwatch: Colors.blue,
       ),
       initialRoute: '/',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiktok_mate/ui/widgets/loading_indicator.dart';
 import 'package:tiktok_mate/ui/widgets/video_control_bar.dart';
 import 'package:video_player/video_player.dart';
 
@@ -61,7 +62,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
   }
 
   Widget _buildLoading() {
-    return const Text('processando vídeo');
+    return const LoadingIndicator(text: 'Processando vídeo...');
   }
 
   Widget _buildVideoPlayer() {
