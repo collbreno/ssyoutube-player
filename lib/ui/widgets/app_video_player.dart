@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiktok_mate/ui/widgets/loading_indicator.dart';
 import 'package:tiktok_mate/ui/widgets/video_control_bar.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 class AppVideoPlayer extends StatefulWidget {
   const AppVideoPlayer({
@@ -27,6 +28,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
+    Wakelock.enable();
     _isShowingControls = true;
     _lastAction = DoubleTapAction.none;
     _controller = VideoPlayerController.network(widget.videoUrl)..initialize();
@@ -37,6 +39,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
 
   @override
   void dispose() {
+    Wakelock.disable();
     _controller.dispose();
     super.dispose();
   }
@@ -56,63 +59,75 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
     return const LoadingIndicator(text: 'Processando vídeo...');
   }
 
+  Future<bool> _onWillPop() async {
+    if (widget.isFullscreen) {
+      widget.setFullscreen(false);
+      return false;
+    }
+
+    return true;
+  }
+
   Widget _buildVideoPlayer() {
-    return Stack(
-      children: [
-        GestureDetector(
-          onTapDown: _onVideoTapped,
-          onDoubleTap: _onVideoDoubleTapped,
-          onDoubleTapDown: _onVideoDoubleTappedDown,
-          child: Material(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(
-                  _controller,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Stack(
+        children: [
+          GestureDetector(
+            onTapDown: _onVideoTapped,
+            onDoubleTap: _onVideoDoubleTapped,
+            onDoubleTapDown: _onVideoDoubleTappedDown,
+            child: Material(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(
+                    _controller,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        if (!_controller.value.isBuffering)
-          Center(
+          if (!_controller.value.isBuffering)
+            Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: !_isShowingControls
+                    ? null
+                    : Material(
+                        color: Colors.black,
+                        clipBehavior: Clip.hardEdge,
+                        borderRadius: BorderRadius.circular(100),
+                        child: IconButton(
+                          iconSize: 56,
+                          onPressed: _playOrPauseVideo,
+                          icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
+                        ),
+                      ),
+              ),
+            ),
+          if (_controller.value.isBuffering)
+            const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                backgroundColor: Colors.black,
+              ),
+            ),
+          Align(
+            alignment: Alignment.bottomCenter,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: !_isShowingControls
-                  ? null
-                  : Material(
-                      color: Colors.black,
-                      clipBehavior: Clip.hardEdge,
-                      borderRadius: BorderRadius.circular(100),
-                      child: IconButton(
-                        iconSize: 56,
-                        onPressed: _playOrPauseVideo,
-                        icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
-                      ),
-                    ),
+              child: _isShowingControls
+                  ? VideoControlBar(
+                      controller: _controller,
+                      setFullscreen: widget.setFullscreen,
+                      isFullscreen: widget.isFullscreen,
+                    )
+                  : null,
             ),
           ),
-        if (_controller.value.isBuffering)
-          const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              backgroundColor: Colors.black,
-            ),
-          ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _isShowingControls
-                ? VideoControlBar(
-                    controller: _controller,
-                    setFullscreen: widget.setFullscreen,
-                    isFullscreen: widget.isFullscreen,
-                  )
-                : null,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

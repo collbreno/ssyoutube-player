@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiktok_mate/ui/bloc/video_cubit.dart';
 import 'package:tiktok_mate/ui/widgets/app_video_player.dart';
@@ -23,6 +24,11 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
   void _setFullscreen(bool value) {
+    if (value) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    }
     setState(() {
       _isFullscreen = value;
     });

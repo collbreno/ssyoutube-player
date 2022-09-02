@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoControlBar extends StatefulWidget {
@@ -35,11 +34,6 @@ class _VideoControlBarState extends State<VideoControlBar> {
 
   void _toggleFullscreen() {
     widget.setFullscreen(!widget.isFullscreen);
-    if (!widget.isFullscreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
-    }
   }
 
   @override
