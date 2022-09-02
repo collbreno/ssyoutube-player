@@ -22,21 +22,12 @@ class AppVideoPlayer extends StatefulWidget {
 class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   late DoubleTapAction _lastAction;
-  late Animation<double> _sizeAnimation;
-  late Animation<double> _fadeAnimation;
-  late AnimationController _animationController;
-  IconData? _lastAnimationIcon;
+  late bool _isShowingControls;
 
   @override
   void initState() {
     super.initState();
-    _animationController =
-        AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
-    _sizeAnimation = Tween<double>(begin: 28, end: 72).animate(_animationController);
-    _fadeAnimation = TweenSequence([
-      TweenSequenceItem<double>(tween: Tween<double>(begin: 0, end: 1), weight: 1),
-      TweenSequenceItem<double>(tween: Tween<double>(begin: 1, end: 0), weight: 1),
-    ]).animate(_animationController);
+    _isShowingControls = true;
     _lastAction = DoubleTapAction.none;
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
@@ -52,15 +43,8 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
 
   void _onVideoTapped(TapDownDetails _) {
     setState(() {
-      _controller.value.isPlaying ? _controller.pause() : _controller.play();
-      _playAnimation(_controller.value.isPlaying ? Icons.play_arrow : Icons.pause);
+      _isShowingControls = !_isShowingControls;
     });
-  }
-
-  void _playAnimation(IconData icon) {
-    _lastAnimationIcon = icon;
-    _animationController.reset();
-    _animationController.forward();
   }
 
   @override
@@ -78,21 +62,8 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
         Center(
           child: GestureDetector(
             onTapDown: _onVideoTapped,
-            onDoubleTap: () {
-              const offset = Duration(seconds: 10);
-              if (_lastAction == DoubleTapAction.back) {
-                _controller.seekTo(_controller.value.position - offset);
-                _playAnimation(Icons.fast_rewind);
-              } else if (_lastAction == DoubleTapAction.forward) {
-                _controller.seekTo(_controller.value.position + offset);
-                _playAnimation(Icons.fast_forward);
-              }
-            },
-            onDoubleTapDown: (details) {
-              final half = MediaQuery.of(context).size.width / 2;
-              _lastAction =
-                  details.globalPosition.dx > half ? DoubleTapAction.forward : DoubleTapAction.back;
-            },
+            onDoubleTap: _onVideoDoubleTapped,
+            onDoubleTapDown: _onVideoDoubleTappedDown,
             child: AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(
@@ -102,38 +73,63 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
           ),
         ),
         Center(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Material(
-                  borderRadius: BorderRadius.circular(100),
-                  color: Colors.black,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Icon(
-                      _lastAnimationIcon,
-                      color: Colors.white,
-                      size: _sizeAnimation.value,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: !_isShowingControls
+                ? null
+                : Material(
+                    color: Colors.black,
+                    clipBehavior: Clip.hardEdge,
+                    borderRadius: BorderRadius.circular(100),
+                    child: IconButton(
+                      iconSize: 56,
+                      onPressed: _playOrPauseVideo,
+                      icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
                     ),
                   ),
-                ),
-              );
-            },
           ),
         ),
         Positioned(
           bottom: 0,
           width: MediaQuery.of(context).size.width,
-          child: VideoControlBar(
-            controller: _controller,
-            setFullscreen: widget.setFullscreen,
-            isFullscreen: widget.isFullscreen,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isShowingControls
+                ? VideoControlBar(
+                    controller: _controller,
+                    setFullscreen: widget.setFullscreen,
+                    isFullscreen: widget.isFullscreen,
+                  )
+                : null,
           ),
         ),
       ],
     );
+  }
+
+  void _playOrPauseVideo() {
+    setState(() {
+      if (_controller.value.isPlaying) {
+        _controller.pause();
+      } else {
+        _controller.play();
+        _isShowingControls = false;
+      }
+    });
+  }
+
+  void _onVideoDoubleTappedDown(details) {
+    final half = MediaQuery.of(context).size.width / 2;
+    _lastAction = details.globalPosition.dx > half ? DoubleTapAction.forward : DoubleTapAction.back;
+  }
+
+  void _onVideoDoubleTapped() {
+    const offset = Duration(seconds: 10);
+    if (_lastAction == DoubleTapAction.back) {
+      _controller.seekTo(_controller.value.position - offset);
+    } else if (_lastAction == DoubleTapAction.forward) {
+      _controller.seekTo(_controller.value.position + offset);
+    }
   }
 }
 
