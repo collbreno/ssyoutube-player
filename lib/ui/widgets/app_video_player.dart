@@ -29,10 +29,10 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
     super.initState();
     _isShowingControls = true;
     _lastAction = DoubleTapAction.none;
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-      });
+    _controller = VideoPlayerController.network(widget.videoUrl)..initialize();
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -59,39 +59,48 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
   Widget _buildVideoPlayer() {
     return Stack(
       children: [
-        Center(
-          child: GestureDetector(
-            onTapDown: _onVideoTapped,
-            onDoubleTap: _onVideoDoubleTapped,
-            onDoubleTapDown: _onVideoDoubleTappedDown,
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(
-                _controller,
+        GestureDetector(
+          onTapDown: _onVideoTapped,
+          onDoubleTap: _onVideoDoubleTapped,
+          onDoubleTapDown: _onVideoDoubleTappedDown,
+          child: Material(
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(
+                  _controller,
+                ),
               ),
             ),
           ),
         ),
-        Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: !_isShowingControls
-                ? null
-                : Material(
-                    color: Colors.black,
-                    clipBehavior: Clip.hardEdge,
-                    borderRadius: BorderRadius.circular(100),
-                    child: IconButton(
-                      iconSize: 56,
-                      onPressed: _playOrPauseVideo,
-                      icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
+        if (!_controller.value.isBuffering)
+          Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: !_isShowingControls
+                  ? null
+                  : Material(
+                      color: Colors.black,
+                      clipBehavior: Clip.hardEdge,
+                      borderRadius: BorderRadius.circular(100),
+                      child: IconButton(
+                        iconSize: 56,
+                        onPressed: _playOrPauseVideo,
+                        icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
+                      ),
                     ),
-                  ),
+            ),
           ),
-        ),
-        Positioned(
-          bottom: 0,
-          width: MediaQuery.of(context).size.width,
+        if (_controller.value.isBuffering)
+          const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              backgroundColor: Colors.black,
+            ),
+          ),
+        Align(
+          alignment: Alignment.bottomCenter,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: _isShowingControls

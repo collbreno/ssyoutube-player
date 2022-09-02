@@ -25,7 +25,7 @@ class _VideoControlBarState extends State<VideoControlBar> {
   void initState() {
     super.initState();
     widget.controller.addListener(() {
-      setState(() {});
+      if (mounted) setState(() {});
     });
   }
 
@@ -45,6 +45,7 @@ class _VideoControlBarState extends State<VideoControlBar> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         VideoProgressIndicator(
           widget.controller,
@@ -79,7 +80,7 @@ class _VideoControlBarState extends State<VideoControlBar> {
           ],
         ),
         IconButton(
-          icon: Icon(widget.isFullscreen ? Icons.fullscreen_exit  : Icons.fullscreen),
+          icon: Icon(widget.isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen),
           onPressed: _toggleFullscreen,
         ),
       ],
