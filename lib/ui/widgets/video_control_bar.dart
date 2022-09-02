@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoControlBar extends StatefulWidget {
-  const VideoControlBar({Key? key, required this.controller}) : super(key: key);
+  const VideoControlBar({
+    Key? key,
+    required this.controller,
+    required this.isFullscreen,
+    required this.setFullscreen,
+  }) : super(key: key);
 
   final VideoPlayerController controller;
+  final bool isFullscreen;
+  final ValueSetter<bool> setFullscreen;
 
   @override
   State<VideoControlBar> createState() => _VideoControlBarState();
@@ -23,6 +31,15 @@ class _VideoControlBarState extends State<VideoControlBar> {
 
   void _toggleController() {
     isPlaying ? widget.controller.pause() : widget.controller.play();
+  }
+
+  void _toggleFullscreen() {
+    widget.setFullscreen(!widget.isFullscreen);
+    if (!widget.isFullscreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    }
   }
 
   @override
@@ -48,17 +65,22 @@ class _VideoControlBarState extends State<VideoControlBar> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          onPressed: _toggleController,
-          icon: Icon(
-            isPlaying ? Icons.pause : Icons.play_arrow,
-            color: Colors.white,
-          ),
+        Row(
+          children: [
+            IconButton(
+              onPressed: _toggleController,
+              icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+            ),
+            Text(
+              '${widget.controller.value.position.format()} / '
+              '${widget.controller.value.duration.format()}',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
         ),
-        Text(
-          '${widget.controller.value.position.format()} / '
-          '${widget.controller.value.duration.format()}',
-          style: const TextStyle(color: Colors.white),
+        IconButton(
+          icon: Icon(widget.isFullscreen ? Icons.fullscreen_exit  : Icons.fullscreen),
+          onPressed: _toggleFullscreen,
         ),
       ],
     );

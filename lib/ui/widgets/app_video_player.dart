@@ -4,9 +4,16 @@ import 'package:tiktok_mate/ui/widgets/video_control_bar.dart';
 import 'package:video_player/video_player.dart';
 
 class AppVideoPlayer extends StatefulWidget {
-  const AppVideoPlayer({Key? key, required this.videoUrl}) : super(key: key);
+  const AppVideoPlayer({
+    Key? key,
+    required this.videoUrl,
+    required this.isFullscreen,
+    required this.setFullscreen,
+  }) : super(key: key);
 
   final String videoUrl;
+  final bool isFullscreen;
+  final ValueSetter<bool> setFullscreen;
 
   @override
   State<AppVideoPlayer> createState() => _AppVideoPlayerState();
@@ -119,7 +126,11 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with SingleTickerProvid
         Positioned(
           bottom: 0,
           width: MediaQuery.of(context).size.width,
-          child: VideoControlBar(controller: _controller),
+          child: VideoControlBar(
+            controller: _controller,
+            setFullscreen: widget.setFullscreen,
+            isFullscreen: widget.isFullscreen,
+          ),
         ),
       ],
     );
