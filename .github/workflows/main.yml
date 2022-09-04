@@ -21,3 +21,7 @@ jobs:
     - run: flutter pub get
     - run: flutter test
     - run: flutter build apk
+    - uses: actions/upload-artifact@v2
+      with:
+        name: android
+        path: build/app/outputs/flutter-apk/app-release.apk
